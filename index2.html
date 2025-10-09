@@ -1,0 +1,484 @@
+TYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espermatogénesis - Realidad Aumentada</title>
+    <style>
+        body {
+            background: linear-gradient(45deg, #981d97 40%, #292929 65%, #fcb045 80%);
+            color: #333;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .titulo-con-imagenes {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .titulo-con-imagenes img {
+            width: 120px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            font-size: 2.8em;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            margin-bottom: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2, h3 {
+            font-size: 1.5em;
+            color: #34495e;
+            margin: 5px 0;
+            font-family: 'Cottonwood', 'Fantasy', serif;
+        }
+
+        #info {
+            max-width: 800px;
+            width: 90%;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        p {
+            font-size: 1.1em;
+            text-align: justify;
+            margin: 15px 0;
+            color: #555;
+        }
+
+        .instructions {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #2980b9, #21618c);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #ar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 1000;
+            background: #000;
+        }
+
+        #exit-ar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+            padding: 12px 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1em;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+        }
+
+        #exit-ar:hover {
+            background-color: rgba(255, 0, 0, 0.8);
+            transform: scale(1.05);
+        }
+
+        #exit-ar svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        #marker-status {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            display: none;
+            z-index: 1001;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .marker-found {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .marker-lost {
+            color: #e74c3c;
+        }
+
+        #loading-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            display: none;
+            z-index: 1002;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ar-active #ar-container,
+        .ar-active #exit-ar,
+        .ar-active #marker-status {
+            display: flex;
+        }
+
+        .ar-active #info {
+            display: none;
+        }
+
+        .loading #loading-message {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .titulo-con-imagenes img {
+                width: 100px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            #info {
+                padding: 20px;
+            }
+            button {
+                font-size: 1em;
+                padding: 12px 25px;
+            }
+        }
+    </style>
+
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <!-- AR.js -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <!-- Animation Mixer -->
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+</head>
+<body>
+    <!-- Pantalla de información -->
+    <div id="info">
+        <div class="titulo-con-imagenes">
+            <img src="https://github.com/Jesus-2705/prueba.github.io/blob/main/imagenes/medicina%20logo.png?raw=true" alt="Logo Medicina">
+            <h1>Espermatogénesis</h1>
+            <img src="https://github.com/Jesus-2705/prueba.github.io/blob/main/imagenes/univesidad%20logo.png?raw=true" alt="Logo Universidad">
+        </div>
+        <h2>Museo de Embriología</h2>
+        <h3>Universidad Autónoma de Chihuahua</h3>
+        <p>La embriología es el estudio del desarrollo de un embrión desde la fecundación del óvulo hasta la octava semana de gestación. Este campo científico es fundamental para comprender cómo se forman los organismos y las estructuras celulares básicas que dan origen a la vida.</p>
+        <p>La <strong>espermatogénesis</strong> es el proceso mediante el cual se producen los espermatozoides a partir de células germinales en los túbulos seminíferos de los testículos. Este proceso incluye las fases de multiplicación, crecimiento, maduración y diferenciación celular.</p>
+        <div class="instructions">
+            <p><strong>📱 Instrucciones:</strong></p>
+            <p>1. Haga clic en "Iniciar Realidad Aumentada"<br>
+            2. Permita el acceso a la cámara cuando se lo solicite<br>
+            3. Apunte la cámara hacia los marcadores:<br>
+            &nbsp;&nbsp;&nbsp;• <strong>Marcador Hiro</strong>: Modelo del testículo<br>
+            &nbsp;&nbsp;&nbsp;• <strong>Marcador Kanji</strong>: Modelo de engranes<br>
+            4. Los modelos 3D aparecerán sobre los marcadores</p>
+        </div>
+        <button id="start-ar">Iniciar Realidad Aumentada</button>
+    </div>
+
+    <!-- Mensaje de carga -->
+    <div id="loading-message">
+        <div class="loader"></div>
+        <p><strong>Iniciando cámara...</strong></p>
+        <p>Por favor, permita el acceso a la cámara</p>
+    </div>
+
+    <!-- Estado del marcador -->
+    <div id="marker-status" class="marker-lost">
+        🔍 Buscando marcadores...
+    </div>
+
+    <!-- Botón de salida -->
+    <button id="exit-ar">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M18.3 5.71a1 1 0 0 0-1.42 0L12 10.59 7.11 5.7a1 1 0 0 0-1.42 1.42L10.59 12l-4.9 4.89a1 1 0 0 0 1.42 1.42L12 13.41l4.89 4.9a1 1 0 0 0 1.42-1.42L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4z"/>
+        </svg>
+        Salir
+    </button>
+
+    <!-- Contenedor para la escena AR -->
+    <div id="ar-container"></div>
+
+    <script>
+        let arSceneCreated = false;
+        let currentScene = null;
+        let activeStreams = [];
+        let markersDetected = { hiro: false, kanji: false };
+
+        const startBtn = document.getElementById('start-ar');
+        const exitBtn = document.getElementById('exit-ar');
+        const body = document.body;
+        const arContainer = document.getElementById('ar-container');
+        const loadingMessage = document.getElementById('loading-message');
+        const markerStatus = document.getElementById('marker-status');
+
+        function updateMarkerStatus() {
+            if (markersDetected.hiro || markersDetected.kanji) {
+                const detected = [];
+                if (markersDetected.hiro) detected.push('Hiro (Testículo)');
+                if (markersDetected.kanji) detected.push('Kanji (Engranes)');
+                markerStatus.textContent = `✅ Detectado: ${detected.join(' y ')}`;
+                markerStatus.className = 'marker-found';
+            } else {
+                markerStatus.textContent = '🔍 Buscando marcadores...';
+                markerStatus.className = 'marker-lost';
+            }
+        }
+
+        function createARScene() {
+            arContainer.innerHTML = '';
+
+            const scene = document.createElement('a-scene');
+            scene.setAttribute('embedded', '');
+            scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;');
+            scene.setAttribute('vr-mode-ui', 'enabled: false');
+
+            // Marcador 1 - Hiro (Testículo)
+            const marker1 = document.createElement('a-marker');
+            marker1.setAttribute('preset', 'hiro');
+            marker1.setAttribute('id', 'marker-hiro');
+
+            const model1 = document.createElement('a-entity');
+            model1.setAttribute('gltf-model', 'models/embriologia/Testiculo45.glb');
+            model1.setAttribute('scale', '0.2 0.2 0.2');
+            model1.setAttribute('rotation', '-90 0 0');
+            model1.setAttribute('animation-mixer', 'clip: *; loop: repeat;');
+
+            marker1.appendChild(model1);
+
+            // Eventos marcador Hiro
+            marker1.addEventListener('markerFound', () => {
+                console.log('✅ Marcador Hiro detectado');
+                markersDetected.hiro = true;
+                updateMarkerStatus();
+            });
+
+            marker1.addEventListener('markerLost', () => {
+                console.log('❌ Marcador Hiro perdido');
+                markersDetected.hiro = false;
+                updateMarkerStatus();
+            });
+
+            // Marcador 2 - Kanji (Engranes)
+            const marker2 = document.createElement('a-marker');
+            marker2.setAttribute('preset', 'kanji');
+            marker2.setAttribute('id', 'marker-kanji');
+
+            const model2 = document.createElement('a-entity');
+            model2.setAttribute('gltf-model', 'models/gears/gears.glb');
+            model2.setAttribute('scale', '0.1 0.1 0.1');
+            model2.setAttribute('animation-mixer', 'clip: *; loop: repeat;');
+
+            marker2.appendChild(model2);
+
+            // Eventos marcador Kanji
+            marker2.addEventListener('markerFound', () => {
+                console.log('✅ Marcador Kanji detectado');
+                markersDetected.kanji = true;
+                updateMarkerStatus();
+            });
+
+            marker2.addEventListener('markerLost', () => {
+                console.log('❌ Marcador Kanji perdido');
+                markersDetected.kanji = false;
+                updateMarkerStatus();
+            });
+
+            // Iluminación
+            const ambientLight = document.createElement('a-entity');
+            ambientLight.setAttribute('light', 'type: ambient; color: #fff; intensity: 0.8');
+
+            const directionalLight = document.createElement('a-entity');
+            directionalLight.setAttribute('light', 'type: directional; color: #fff; intensity: 0.5');
+            directionalLight.setAttribute('position', '1 1 1');
+
+            // Cámara
+            const camera = document.createElement('a-entity');
+            camera.setAttribute('camera', '');
+
+            // Ensamblar escena
+            scene.appendChild(marker1);
+            scene.appendChild(marker2);
+            scene.appendChild(ambientLight);
+            scene.appendChild(directionalLight);
+            scene.appendChild(camera);
+            arContainer.appendChild(scene);
+
+            scene.addEventListener('loaded', () => {
+                console.log('✅ Escena AR cargada');
+                body.classList.remove('loading');
+            });
+
+            currentScene = scene;
+            arSceneCreated = true;
+        }
+
+        function stopAllVideoStreams() {
+            activeStreams.forEach(stream => {
+                stream.getTracks().forEach(track => {
+                    track.stop();
+                    console.log('🛑 Stream detenido:', track.label);
+                });
+            });
+            activeStreams = [];
+
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                if (video.srcObject) {
+                    const tracks = video.srcObject.getTracks();
+                    tracks.forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+                video.pause();
+            });
+        }
+
+        function destroyARScene() {
+            if (!currentScene) return;
+
+            console.log('🔴 Destruyendo escena AR...');
+            stopAllVideoStreams();
+
+            arContainer.innerHTML = '';
+            currentScene = null;
+            arSceneCreated = false;
+            markersDetected = { hiro: false, kanji: false };
+
+            console.log('✅ Escena AR destruida');
+        }
+
+        startBtn.addEventListener('click', async () => {
+            console.log('🚀 Iniciando Realidad Aumentada...');
+            body.classList.add('loading');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+
+                activeStreams.push(stream);
+                console.log('✅ Permiso de cámara concedido');
+
+                createARScene();
+                body.classList.add('ar-active');
+
+                setTimeout(() => {
+                    stream.getTracks().forEach(track => track.stop());
+                }, 1000);
+
+            } catch (error) {
+                console.error('❌ Error al acceder a la cámara:', error);
+                alert('No se pudo acceder a la cámara. Por favor, verifique los permisos.');
+                body.classList.remove('loading');
+            }
+        });
+
+        exitBtn.addEventListener('click', () => {
+            console.log('🚪 Saliendo de Realidad Aumentada...');
+            destroyARScene();
+
+            setTimeout(() => {
+                body.classList.remove('ar-active');
+                updateMarkerStatus();
+                window.location.reload();
+            }, 300);
+        });
+
+        window.addEventListener('beforeunload', () => {
+            stopAllVideoStreams();
+        });
+    </script>
+</body>
+</html>
